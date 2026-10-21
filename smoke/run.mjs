@@ -26,7 +26,7 @@ execFileSync('npm', ['i', '--no-audit', '--no-fund', '-s', `./${tgz}`, 'eslint@1
   stdio: 'inherit',
 });
 
-let out = '';
+let out;
 try {
   execFileSync('npx', ['eslint', '-f', 'json', 'server.js'], { cwd: work, encoding: 'utf8' });
   throw new Error('eslint exited 0, expected lint errors');
