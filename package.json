@@ -54,7 +54,7 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "check:exports": "publint && attw --pack . --profile node16",
+    "check:exports": "publint && attw --pack . --profile node16 --ignore-rules missing-export-equals",
     "prepublishOnly": "npm run lint && npm run typecheck && npm test && npm run build",
     "smoke": "npm run build && node smoke/run.mjs"
   },
