@@ -68,6 +68,7 @@ for (const c of cases) {
   execFileSync('npm', ['i', '--no-audit', '--no-fund', '-s', tgz, ...c.deps], {
     cwd: dir,
     stdio: 'inherit',
+    shell,
   });
   let out;
   try {
