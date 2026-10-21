@@ -1,0 +1,81 @@
+{
+  "name": "eslint-plugin-webhook-safety",
+  "version": "0.1.0",
+  "description": "ESLint rules that catch broken Stripe webhook handlers before deploy: parsed bodies before signature checks, missing verification, missing duplicate-event checks, and BullMQ jobs without a jobId.",
+  "license": "MIT",
+  "author": "Krrish Kumar (https://github.com/Krrishkumar125)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Krrishkumar125/eslint-plugin-webhook-safety.git"
+  },
+  "homepage": "https://github.com/Krrishkumar125/eslint-plugin-webhook-safety#readme",
+  "bugs": "https://github.com/Krrishkumar125/eslint-plugin-webhook-safety/issues",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "webhook",
+    "stripe",
+    "idempotency",
+    "bullmq",
+    "express",
+    "nextjs",
+    "security"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "check:exports": "publint && attw --pack . --profile node16",
+    "prepublishOnly": "npm run lint && npm run typecheck && npm test && npm run build",
+    "smoke": "npm run build && node smoke/run.mjs"
+  },
+  "peerDependencies": {
+    "eslint": ">=8.57.0"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.5",
+    "@eslint/js": "^10.0.1",
+    "@types/estree": "^1.0.9",
+    "@types/node": "^20.19.43",
+    "@typescript-eslint/parser": "^8.72.0",
+    "@vitest/coverage-v8": "^4.1.12",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10",
+    "publint": "^0.3.25",
+    "tsup": "^8.5.1",
+    "typescript": "~5.9",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^4.1.12"
+  },
+  "sideEffects": false
+}
