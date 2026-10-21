@@ -21,6 +21,9 @@ single most common Stripe webhook bug (see the
 - `await req.json()` (or Hono's `c.req.json()`) before `constructEvent` in the same function.
 - `constructEvent(JSON.stringify(...), ...)`.
 
+The middleware checks only fire when `constructEvent` is given `req.body`. `express.json({ verify })`, which keeps
+the raw bytes (for example on `req.rawBody`), is not reported.
+
 ## Examples
 
 ❌ Incorrect

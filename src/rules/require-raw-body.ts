@@ -12,6 +12,31 @@ import {
   type Node,
 } from '../utils.js';
 
+/** `express.json({ verify })` keeps the raw bytes (usually on `req.rawBody`), so it is fine. */
+function parsesAway(node: Node): boolean {
+  if (!isJsonParser(node)) return false;
+  const opts = (node as ESTree.CallExpression).arguments[0];
+  return !(
+    opts?.type === 'ObjectExpression' &&
+    opts.properties.some(
+      (p) => p.type === 'Property' && p.key.type === 'Identifier' && p.key.name === 'verify',
+    )
+  );
+}
+
+/** constructEvent(req.body, ...) somewhere in the handler: the payload is whatever the parser left. */
+function usesParsedBody(fn: Node): boolean {
+  return findAll(fn, isConstructEvent).some((c) => {
+    const payload = c.arguments[0];
+    return (
+      payload?.type === 'MemberExpression' &&
+      !payload.computed &&
+      payload.property.type === 'Identifier' &&
+      payload.property.name === 'body'
+    );
+  });
+}
+
 const rule: Rule.RuleModule = {
   meta: {
     type: 'problem',
@@ -58,14 +83,14 @@ const rule: Rule.RuleModule = {
           const args = n.arguments as Node[];
           const first = args[0];
           const pathless = !(first?.type === 'Literal' && first.value !== '/');
-          if (pathless && args.some(isJsonParser)) {
+          if (pathless && args.some(parsesAway)) {
             globalParsers.push({ owner: callee.object.name, node: n });
           }
         }
 
         const route = asRoute(n);
-        if (route && handlerVerifies(route.handler)) {
-          const inlineJson = route.middlewares.filter(isJsonParser);
+        if (route && handlerVerifies(route.handler) && usesParsedBody(route.handler)) {
+          const inlineJson = route.middlewares.filter(parsesAway);
           for (const mw of inlineJson) {
             context.report({
               node: mw,

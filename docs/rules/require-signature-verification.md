@@ -19,8 +19,11 @@ A handler that never calls anything verification-like:
 A call counts as verification when its name matches `/verif|signature|constructEvent|timingSafeEqual|unwrap/i`
 (`constructEvent`, `verifySignature`, `wh.verify`, `crypto.timingSafeEqual`, `client.webhooks.unwrap` …).
 
-To keep false positives low the rule stays silent when the route has any middleware other than a
-body parser, because that middleware may do the verification.
+To keep false positives low the rule stays silent when:
+
+- the route has any middleware other than a body parser (it may do the verification);
+- the handler passes the request object to another function (`return handleStripeWebhook(req)`), which may verify it in another file;
+- the handler calls something authentication-like (`auth`, `session`, `apiKey`, `permission`, `currentUser`). Authenticated endpoints, such as an API for managing webhook subscriptions, are not webhook receivers.
 
 ## Options
 

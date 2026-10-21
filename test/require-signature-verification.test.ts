@@ -25,6 +25,13 @@ ruleTester.run('require-signature-verification', rule, {
     {
       code: `app.post('/api/webhooks', async (req, res) => { const session = await getServerSession(); save(req.body); });`,
     },
+    // cross-file: request handed to a helper that may verify
+    {
+      code: `export async function POST(req) { return handleStripeWebhook(req); }`,
+      filename: '/repo/app/api/webhooks/stripe/route.ts',
+    },
+    `app.post('/webhooks/stripe', (req, res) => webhookService.process(req, res));`,
+    `app.post('/webhooks/stripe', async (c) => { const ok = await checkRequest(c.req); });`,
     // Next.js POST outside a webhook file
     {
       code: `export async function POST(req) { return new Response('ok'); }`,
@@ -41,6 +48,11 @@ ruleTester.run('require-signature-verification', rule, {
                const event = JSON.parse(req.body);
                await grantCredits(event.data.object);
              });`,
+      errors: [{ messageId: 'missing' }],
+    },
+    {
+      // logging the request is not verification
+      code: `app.post('/webhook', (req, res) => { console.log(req); res.json(req.body); });`,
       errors: [{ messageId: 'missing' }],
     },
     {

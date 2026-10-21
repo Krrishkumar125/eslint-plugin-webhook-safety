@@ -1,6 +1,6 @@
 # require-idempotency
 
-Require a duplicate-event check (using `event.id`) before a webhook handler performs side effects.
+Suggest a duplicate-event check (using `event.id`) when a webhook handler writes directly.
 
 💼 `recommended` (warn), `strict` (error)
 
@@ -10,24 +10,34 @@ Stripe delivers events **at least once**. It retries on timeouts and non-2xx res
 sometimes sends the same event twice. Stripe's docs say to log processed event ids and skip
 ones you have already handled. Without that, users get double credits, double emails and double refunds.
 
-## What it reports
+## What ## What it reports
 
-A `constructEvent(...)` result that is stored in a variable (or destructured) when the enclosing
-function never reads `event.id`.
+A `constructEvent(...)` result (stored or destructured) when the same function then performs a
+**direct side effect** and never reads `event.id`. Direct side effects are method calls such as
+`db.x.create/update/upsert/delete/increment`, `queue.add`, `resend.emails.send`,
+`transporter.sendMail` and `stripe.refunds.create`. The report points at the first such write.
 
-It stays silent when:
+It is deliberately conservative and stays silent when:
 
 - the whole `event` is passed to another function (`handleStripeEvent(event)`), which may dedupe;
-- a call's name looks like a dedupe helper (`/idempot|dedup|processed|alreadyHandled|seenEvent/i`);
-- the call is listed in `idempotencyFunctions`.
+- processing happens in **helpers** (local or imported), even if they receive data derived from the event
+  (`recordTrialCard({ subscriptionId })`), because they are often idempotent by design
+  (for example by checking state already stored in Stripe);
+- a call's name looks like a dedupe helper (`/idempot|dedup|processed|alreadyHandled|seenEvent/i`), or is listed in `idempotencyFunctions`;
+- the function only verifies and returns the event.
+
+If a write is idempotent on its own (an upsert keyed by the Stripe object id), it is fine to ignore the warning.
 
 ## Options
 
 ```js
-'webhook-safety/require-idempotency': ['warn', { idempotencyFunctions: ['once'] }]
+'webhook-safety/require-idempotency': ['warn', {
+  idempotencyFunctions: ['once'], // calls that dedupe
+  strict: false,                  // true: helper calls with arguments also count as side effects
+}]
 ```
 
-## Examples
+les
 
 ❌ Incorrect
 

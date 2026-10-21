@@ -38,9 +38,9 @@ app.post('/webhooks/stripe', async (req, res) => {
 
 ```text
 $ npx eslint server.js
-  3:1  error    `app.use(express.json())` on line 1 runs before this webhook route and parses the body ...  webhook-safety/require-raw-body
-  4:17 warning  Stripe retries and duplicates webhook deliveries, but this handler never uses `event.id` ...   webhook-safety/require-idempotency
-  5:9  warning  Webhook deliveries are retried, so this queue.add() will enqueue the same work twice ...      webhook-safety/bullmq-require-job-id
+  2:1  error    `app.use(express.json())` on line 1 runs before this webhook route and parses the body ...  webhook-safety/require-raw-body
+  4:9  warning  Consider a duplicate-event check: Stripe can deliver `event` more than once ...                 webhook-safety/require-idempotency
+  4:9  warning  Webhook deliveries are retried, so this queue.add() will enqueue the same work twice ...      webhook-safety/bullmq-require-job-id
 ```
 
 ## Rules
@@ -49,14 +49,26 @@ $ npx eslint server.js
 | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------- | ----------- | ------ | --- |
 | [require-raw-body](docs/rules/require-raw-body.md)                             | `express.json()` / `req.json()` / `JSON.stringify` before `constructEvent` | error       | error  | ✅  |
 | [require-signature-verification](docs/rules/require-signature-verification.md) | webhook route or Next.js `POST` with no signature check                    | error       | error  |     |
-| [require-idempotency](docs/rules/require-idempotency.md)                       | `constructEvent` result whose `event.id` is never used for dedupe          | warn        | error  |     |
+| [require-idempotency](docs/rules/require-idempotency.md)                       | DB/queue/email/payment write in the handler with no `event.id` dedupe      | warn        | error  |     |
 | [bullmq-require-job-id](docs/rules/bullmq-require-job-id.md)                   | `queue.add()` in a webhook handler without `jobId`                         | warn        | error  | ✅  |
 
 The rules are tuned for **low false positives**. When in doubt (custom middleware, the event passed to a
 helper, options passed as a variable) they stay quiet. Each rule doc lists exactly what triggers it.
 
-Supports Express, Hono, Fastify-style routers and the Next.js App Router, in JavaScript and TypeScript
-(use `typescript-eslint`'s parser as usual).
+Supports Express, Hono, Fastify-style routers and the Next.js App Router, in JavaScript and TypeScript.
+
+### TypeScript
+
+ESLint only lints `.ts` files that some config object matches, so pair the plugin with
+`typescript-eslint` (or at least its parser):
+
+```js
+// eslint.config.js
+import tseslint from 'typescript-eslint';
+import webhookSafety from 'eslint-plugin-webhook-safety';
+
+export default [...tseslint.configs.recommended, webhookSafety.configs.recommended];
+```
 
 ### Legacy `.eslintrc` (ESLint 8)
 
@@ -66,7 +78,8 @@ Supports Express, Hono, Fastify-style routers and the Next.js App Router, in Jav
 
 ## Requirements
 
-ESLint ≥ 8.57 (flat config) and Node ≥ 20.
+ESLint 8.57+, 9 or 10 (flat config, or `.eslintrc` via the legacy configs) and Node ≥ 20. Every release is
+smoke-tested from the packed tarball against ESLint 8.57 (flat and legacy), 9, 10 and `@typescript-eslint/parser`.
 
 ## License
 

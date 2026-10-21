@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-webhook-safety",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "ESLint rules that catch broken Stripe webhook handlers before deploy: parsed bodies before signature checks, missing verification, missing duplicate-event checks, and BullMQ jobs without a jobId.",
   "license": "MIT",
   "author": "Krrish Kumar (https://github.com/Krrishkumar125)",

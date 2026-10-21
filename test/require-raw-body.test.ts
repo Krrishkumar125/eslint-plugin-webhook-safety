@@ -20,6 +20,13 @@ ruleTester.run('require-raw-body', rule, {
      }`,
     // json() in a function that never verifies a Stripe signature is out of scope
     `export async function POST(req) { const data = await req.json(); return Response.json(data); }`,
+    // json parser that keeps the raw bytes, verified with req.rawBody
+    `app.use(express.json({ verify: (req, res, buf) => { req.rawBody = buf; } }));
+     app.post('/webhook', (req, res) => { stripe.webhooks.constructEvent(req.rawBody, sig, secret); });`,
+    // global json parser, but the payload comes from somewhere other than req.body
+    `app.use(express.json());
+     app.post('/webhook', (req, res) => { stripe.webhooks.constructEvent(req.rawBody, sig, secret); });`,
+    `app.post('/webhook', express.json({ verify: keepRaw }), (req, res) => { stripe.webhooks.constructEvent(req.rawBody, sig, secret); });`,
     // a json parser on a different app instance
     `api.use(express.json());
      app.post('/webhook', (req, res) => { stripe.webhooks.constructEvent(req.body, sig, secret); });`,

@@ -1,0 +1,9 @@
+{
+  "fixture": "server.js",
+  "expected": [
+    "webhook-safety/require-raw-body",
+    "webhook-safety/bullmq-require-job-id",
+    "webhook-safety/require-idempotency",
+    "webhook-safety/require-signature-verification"
+  ]
+}

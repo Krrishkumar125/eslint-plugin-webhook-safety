@@ -8,6 +8,7 @@ import {
   isWebhookFile,
   walk,
   WEBHOOK_PATH,
+  type FunctionNode,
   type Node,
 } from '../utils.js';
 
@@ -43,8 +44,28 @@ const rule: Rule.RuleModule = {
 
     function verifies(fn: Node): boolean {
       let found = false;
+      const params = new Set(
+        (fn as FunctionNode).params.flatMap((p) => (p.type === 'Identifier' ? [p.name] : [])),
+      );
+      const isRequest = (a: Node): boolean =>
+        (a.type === 'Identifier' && params.has(a.name)) ||
+        (a.type === 'MemberExpression' &&
+          a.object.type === 'Identifier' &&
+          params.has(a.object.name) &&
+          !a.computed &&
+          a.property.type === 'Identifier' &&
+          a.property.name === 'req');
       walk(fn, (n) => {
         if (found || (n.type !== 'CallExpression' && n.type !== 'NewExpression')) return;
+        // The whole request handed to a helper (often in another file) that may verify it.
+        const root = n.callee.type === 'MemberExpression' ? n.callee.object : undefined;
+        const builtin =
+          root?.type === 'Identifier' &&
+          ['console', 'JSON', 'Response', 'NextResponse', 'res', 'Object'].includes(root.name);
+        if (!builtin && (n.arguments as Node[]).some(isRequest)) {
+          found = true;
+          return;
+        }
         const name = calleeName(n);
         if (name && (extra.has(name) || DEFAULT_VERIFY.test(name) || AUTH_CALL.test(name)))
           found = true;
