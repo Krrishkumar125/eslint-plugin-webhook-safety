@@ -17,6 +17,14 @@ ruleTester.run('require-signature-verification', rule, {
       code: `app.post('/webhook', (req, res) => { assertFromPaddle(req); });`,
       options: [{ verifyFunctions: ['assertFromPaddle'] }],
     },
+    // regression (formbricks): authenticated management API for webhook subscriptions
+    {
+      code: `export const POST = async (request) => authenticatedApiClient({ request, handler: create });`,
+      filename: '/repo/apps/web/modules/api/v2/management/webhooks/route.ts',
+    },
+    {
+      code: `app.post('/api/webhooks', async (req, res) => { const session = await getServerSession(); save(req.body); });`,
+    },
     // Next.js POST outside a webhook file
     {
       code: `export async function POST(req) { return new Response('ok'); }`,

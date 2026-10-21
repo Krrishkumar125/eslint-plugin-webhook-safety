@@ -26,6 +26,11 @@ ruleTester.run('require-idempotency', rule, {
              }`,
       options: [{ idempotencyFunctions: ['once'] }],
     },
+    // regression (twenty): verify-and-return wrapper; the caller dedupes
+    `class S { constructEventFromPayload(sig, payload) {
+       const returnValue = this.stripe.webhooks.constructEvent(payload, sig, secret);
+       return returnValue;
+     } }`,
     // constructEvent result not stored: nothing to analyse
     `function h() { stripe.webhooks.constructEvent(raw, sig, secret); }`,
   ],

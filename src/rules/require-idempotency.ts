@@ -62,6 +62,16 @@ const rule: Rule.RuleModule = {
             n.property.name === 'id'
           ) {
             handled = true;
+          } else if (
+            (n.type === 'ReturnStatement' &&
+              n.argument?.type === 'Identifier' &&
+              n.argument.name === name) ||
+            (n.type === 'ArrowFunctionExpression' &&
+              n.body.type === 'Identifier' &&
+              n.body.name === name)
+          ) {
+            // A wrapper that only verifies and returns the event; the caller handles duplicates.
+            handled = true;
           } else if (n.type === 'CallExpression') {
             const callee = calleeName(n);
             if (callee && (helpers.has(callee) || DEFAULT_HELPERS.test(callee))) handled = true;

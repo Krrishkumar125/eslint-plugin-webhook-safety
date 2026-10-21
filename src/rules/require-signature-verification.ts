@@ -12,6 +12,8 @@ import {
 } from '../utils.js';
 
 const DEFAULT_VERIFY = /verif|signature|constructEvent|timingSafeEqual|unwrap/i;
+/** Authenticated endpoints (e.g. a CRUD API for managing webhook subscriptions) are not receivers. */
+const AUTH_CALL = /auth|session|apiKey|permission|currentUser|requireUser/i;
 
 const rule: Rule.RuleModule = {
   meta: {
@@ -44,7 +46,8 @@ const rule: Rule.RuleModule = {
       walk(fn, (n) => {
         if (found || (n.type !== 'CallExpression' && n.type !== 'NewExpression')) return;
         const name = calleeName(n);
-        if (name && (extra.has(name) || DEFAULT_VERIFY.test(name))) found = true;
+        if (name && (extra.has(name) || DEFAULT_VERIFY.test(name) || AUTH_CALL.test(name)))
+          found = true;
       });
       return found;
     }
