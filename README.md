@@ -1,6 +1,8 @@
 # eslint-plugin-webhook-safety
 
 [![CI](https://github.com/Krrishkumar125/eslint-plugin-webhook-safety/actions/workflows/ci.yml/badge.svg)](https://github.com/Krrishkumar125/eslint-plugin-webhook-safety/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/eslint-plugin-webhook-safety)](https://www.npmjs.com/package/eslint-plugin-webhook-safety)
+[![downloads](https://img.shields.io/npm/dm/eslint-plugin-webhook-safety)](https://www.npmjs.com/package/eslint-plugin-webhook-safety)
 
 ESLint rules that catch the Stripe webhook bugs that only show up in production:
 
