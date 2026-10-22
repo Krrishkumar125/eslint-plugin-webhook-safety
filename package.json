@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-webhook-safety",
   "version": "0.2.0",
-  "description": "ESLint rules that catch broken Stripe webhook handlers before deploy: parsed bodies before signature checks, missing verification, missing duplicate-event checks, and BullMQ jobs without a jobId.",
+  "description": "ESLint rules that catch broken Stripe webhook handlers: unverified signatures, parsed bodies, missing dedupe.",
   "license": "MIT",
   "author": "Krrish Kumar (https://github.com/Krrishkumar125)",
   "repository": {
@@ -9,7 +9,9 @@
     "url": "git+https://github.com/Krrishkumar125/eslint-plugin-webhook-safety.git"
   },
   "homepage": "https://github.com/Krrishkumar125/eslint-plugin-webhook-safety#readme",
-  "bugs": "https://github.com/Krrishkumar125/eslint-plugin-webhook-safety/issues",
+  "bugs": {
+    "url": "https://github.com/Krrishkumar125/eslint-plugin-webhook-safety/issues"
+  },
   "keywords": [
     "eslint",
     "eslintplugin",
@@ -17,10 +19,10 @@
     "webhook",
     "stripe",
     "idempotency",
-    "bullmq",
+    "security",
     "express",
     "nextjs",
-    "security"
+    "bullmq"
   ],
   "type": "module",
   "main": "./dist/index.cjs",
