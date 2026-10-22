@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 (2026-10-23)
+
+- npm metadata: shorter description, focused keywords, homepage/bugs links; README links sibling packages.
+
 ## 0.2.0 (2026-10-22)
 
 - `require-idempotency` is now conservative: it reports only **direct** writes in the handler (DB, queue, email,
