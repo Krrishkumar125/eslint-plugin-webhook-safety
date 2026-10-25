@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-webhook-safety",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "ESLint rules that catch broken Stripe webhook handlers: unverified signatures, parsed bodies, missing dedupe.",
   "license": "MIT",
   "author": "Krrish Kumar (https://github.com/Krrishkumar125)",
