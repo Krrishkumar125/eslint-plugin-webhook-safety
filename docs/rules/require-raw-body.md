@@ -38,6 +38,12 @@ export async function POST(req) {
   const body = await req.json();
   const event = stripe.webhooks.constructEvent(JSON.stringify(body), sig, secret);
 }
+
+// NestJS: @Body() is parsed JSON, not the bytes Stripe signed
+@Post()
+handle(@Body() body: any, @Headers('stripe-signature') sig: string) {
+  return this.stripe.webhooks.constructEvent(body, sig, this.secret);
+}
 ```
 
 ✅ Correct
@@ -51,6 +57,12 @@ app.use(express.json()); // after the webhook route
 export async function POST(req) {
   const body = await req.text();
   const event = stripe.webhooks.constructEvent(body, req.headers.get('stripe-signature'), secret);
+}
+
+// NestJS: NestFactory.create(AppModule, { rawBody: true }), then read req.rawBody
+@Post()
+handle(@Req() req: RawBodyRequest<Request>, @Headers('stripe-signature') sig: string) {
+  return this.stripe.webhooks.constructEvent(req.rawBody, sig, this.secret);
 }
 ```
 

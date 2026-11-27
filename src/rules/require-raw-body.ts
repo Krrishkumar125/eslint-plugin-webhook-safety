@@ -57,6 +57,8 @@ const rule: Rule.RuleModule = {
         'The body is parsed with .json() before the Stripe signature check. Read the raw body with .text() and pass it to constructEvent.',
       stringified:
         'JSON.stringify() of a parsed body is not byte-identical to what Stripe signed. Pass the raw body string or Buffer.',
+      nestBody:
+        'This @Body() parameter is already parsed by the JSON body parser, so constructEvent cannot verify the signature. Enable `rawBody: true` in NestFactory.create and pass `req.rawBody` instead.',
       useRaw: "Replace with express.raw({ type: 'application/json' })",
       useText: 'Read the body with .text() instead',
     },
@@ -132,6 +134,29 @@ const rule: Rule.RuleModule = {
           }
           const fn = enclosingFunction(n);
           if (!fn) return;
+          // NestJS: constructEvent(body, ...) where `body` is a @Body() parameter of this handler
+          if (payload?.type === 'Identifier') {
+            const payloadName = payload.name;
+            const bodyParam = fn.params.some((p) => {
+              const param = p as Node & {
+                name?: string;
+                decorators?: { expression: Node }[];
+              };
+              return (
+                param.type === 'Identifier' &&
+                param.name === payloadName &&
+                !!param.decorators?.some((d) => {
+                  const e = d.expression;
+                  return (
+                    e.type === 'CallExpression' &&
+                    e.callee.type === 'Identifier' &&
+                    e.callee.name === 'Body'
+                  );
+                })
+              );
+            });
+            if (bodyParam) context.report({ node: payload, messageId: 'nestBody' });
+          }
           const params = new Set(
             fn.params.flatMap((p) => (p.type === 'Identifier' ? [p.name] : [])),
           );

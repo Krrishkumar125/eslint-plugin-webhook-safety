@@ -30,8 +30,32 @@ ruleTester.run('require-raw-body', rule, {
     // a json parser on a different app instance
     `api.use(express.json());
      app.post('/webhook', (req, res) => { stripe.webhooks.constructEvent(req.body, sig, secret); });`,
+    // NestJS handler reading the raw bytes (rawBody: true on the factory)
+    `@Controller('webhooks/stripe')
+     class StripeController {
+       @Post()
+       handle(@Req() req: RawBodyRequest<Request>, @Headers('stripe-signature') sig: string) {
+         return this.stripe.webhooks.constructEvent(req.rawBody, sig, this.secret);
+       }
+     }`,
+    // ordinary Nest JSON controller, no signature verification, @Body() is fine
+    `@Controller('users')
+     class UsersController {
+       @Post()
+       create(@Body() dto: CreateUserDto) { return this.users.create(dto); }
+     }`,
   ],
   invalid: [
+    {
+      code: `@Controller('webhooks/stripe')
+             class StripeController {
+               @Post()
+               handle(@Body() body: any, @Headers('stripe-signature') sig: string) {
+                 return this.stripe.webhooks.constructEvent(body, sig, this.secret);
+               }
+             }`,
+      errors: [{ messageId: 'nestBody' }],
+    },
     {
       code: `app.post('/webhooks/stripe', express.json(), (req, res) => {
                const event = stripe.webhooks.constructEvent(req.body, sig, secret);
